@@ -50,7 +50,9 @@ async function initDb() {
                 aiEstimate VARCHAR(100),
                 postedBy VARCHAR(100),
                 postedAgo VARCHAR(100) DEFAULT '1d ago',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_location (location),
+                INDEX idx_type (type)
             );
         `);
         

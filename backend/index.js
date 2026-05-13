@@ -4,7 +4,9 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const propertyRoutes = require('./routes/property');
+const userRoutes = require('./routes/users');
 const path = require('path');
+const setupSwagger = require('./swagger');
 
 const app = express();
 
@@ -15,7 +17,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/properties', propertyRoutes);
+
+// Swagger Setup
+setupSwagger(app);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

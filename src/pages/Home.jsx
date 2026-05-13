@@ -12,10 +12,15 @@ const Home = () => {
   const fetchProperties = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/properties`, {
-        params: { search: searchQuery, type: typeFilter }
+      const res = await axios.get(`http://localhost:5000/api/properties/all`, {
+        params: { 
+          location: searchQuery || undefined, 
+          // Note: map 'type' to our backend property filters if needed later
+          // type: typeFilter === 'All' ? undefined : typeFilter 
+        }
       });
-      setProperties(res.data);
+      // Handle the new response structure
+      setProperties(res.data.properties || []);
     } catch (err) {
       console.error('Error fetching properties', err);
     } finally {

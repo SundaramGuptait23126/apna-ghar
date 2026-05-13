@@ -1,66 +1,23 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../db');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const usersController = require('../controllers/usersController');
 
 const router = express.Router();
 
-router.post('/signup', async (req, res) => {
-    try {
-        const { email, password, role } = req.body;
-        if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication APIs
+ */
 
-        const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (existingUser.length > 0) return res.status(400).json({ message: 'User already exists' });
+// Note: Using the exact same logic from usersController
+// to keep backward compatibility with frontend making requests to /api/signup
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const userRole = role === 'admin' ? 'admin' : 'user';
-
-        await db.query('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', 
-            [email, hashedPassword, userRole]);
-
-        res.status(201).json({ message: 'User created successfully' });
-    } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
-
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) return res.status(400).json({ message: 'Invalid credentials' });
-
-        const user = users[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-        const token = jwt.sign(
-            { id: user.id, role: user.role, email: user.email }, 
-            process.env.JWT_SECRET || 'supersecretkey', 
-            { expiresIn: '24h' }
-        );
-        
-        res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+router.post('/signup', usersController.registerUser);
+router.post('/login', usersController.loginUser);
 
 // GET /users - Admin only
-router.get('/users', verifyToken, verifyAdmin, async (req, res) => {
-    try {
-        const [users] = await db.query('SELECT id, email, role FROM users');
-        res.json(users);
-    } catch (error) {
-        console.error('Get users error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+router.get('/users', verifyToken, verifyAdmin, usersController.getAllUsers);
 
 module.exports = router;

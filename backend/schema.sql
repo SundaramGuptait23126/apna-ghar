@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS properties (
     aiEstimate VARCHAR(100),
     postedBy VARCHAR(100),
     postedAgo VARCHAR(100) DEFAULT '1d ago',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_location (location),
+    INDEX idx_type (type)
 );
 
 -- Optional: Insert a default admin user (password is 'admin123' if using bcrypt, you'll need to sign up to hash it properly)
